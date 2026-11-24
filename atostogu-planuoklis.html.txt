@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atostogų planuoklis</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 24px;
+        background: #f5f7fa;
+        color: #222;
+    }
+
+    h1 {
+        margin-bottom: 8px;
+    }
+
+    .summary {
+        background: #fff;
+        padding: 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .warning {
+        color: #b00020;
+        font-weight: bold;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    th, td {
+        border: 1px solid #d9d9d9;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background: #0057b8;
+        color: white;
+        position: sticky;
+        top: 0;
+    }
+
+    .employee {
+        text-align: left;
+        font-weight: bold;
+        background: #eef4ff;
+    }
+
+    .vacation {
+        background: #ffd9d9;
+        color: #a30000;
+        font-weight: bold;
+    }
+
+    .work-ok {
+        background: #e8f7e8;
+    }
+
+    .work-low {
+        background: #ffb3b3;
+        font-weight: bold;
+        color: #8b0000;
+    }
+
+    .legend {
+        margin-top: 15px;
+        background: white;
+        padding: 12px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+</style>
+</head>
+<body>
+
+<h1>Komandos atostogų planuoklis</h1>
+
+<div class="summary" id="summary"></div>
+
+<table id="planner"></table>
+
+<div class="legend">
+    <strong>Legenda:</strong><br>
+    🌴 Atostogos<br>
+    Žalia – dirba pakankamai žmonių (3 ar daugiau)<br>
+    Raudona – dirba mažiau nei 3 žmonės
+</div>
+
+<script>
+const daysInMonth = 31;
+
+const employees = [
+    {
+        name: "Jonas",
+        vacation: [3,4,5,6,7]
+    },
+    {
+        name: "Aistė",
+        vacation: [5,6,7,8,9]
+    },
+    {
+        name: "Mantas",
+        vacation: [10,11,12,13,14]
+    },
+    {
+        name: "Eglė",
+        vacation: [7,8,9,10,11]
+    },
+    {
+        name: "Tomas",
+        vacation: [6,7,8,9,10]
+    }
+];
+
+const table = document.getElementById("planner");
+
+// Header
+let header = "<tr><th>Darbuotojas</th>";
+for(let d=1; d<=daysInMonth; d++){
+    header += `<th>${d}</th>`;
+}
+header += "</tr>";
+table.innerHTML = header;
+
+// Employee rows
+employees.forEach(emp => {
+    let row = `<tr><td class="employee">${emp.name}</td>`;
+
+    for(let d=1; d<=daysInMonth; d++){
+        if(emp.vacation.includes(d)){
+            row += `<td class="vacation">🌴</td>`;
+        } else {
+            row += `<td></td>`;
+        }
+    }
+
+    row += "</tr>";
+    table.innerHTML += row;
+});
+
+// Staffing row
+let staffingRow = '<tr><td class="employee">Dirba</td>';
+
+let alertDays = [];
+
+for(let d=1; d<=daysInMonth; d++){
+
+    let onVacation = employees.filter(
+        e => e.vacation.includes(d)
+    ).length;
+
+    let working = employees.length - onVacation;
+
+    if(working < 3){
+        staffingRow += `<td class="work-low">${working}</td>`;
+        alertDays.push(`Diena ${d} (${working} darbuotojai)`);
+    } else {
+        staffingRow += `<td class="work-ok">${working}</td>`;
+    }
+}
+
+staffingRow += "</tr>";
+table.innerHTML += staffingRow;
+
+// Summary
+const summary = document.getElementById("summary");
+
+if(alertDays.length){
+    summary.innerHTML = `
+        <div class="warning">
+            ⚠ Perspėjimas: yra dienų, kai dirba mažiau nei 3 žmonės.
+        </div>
+        <br>
+        <strong>Probleminės dienos:</strong>
+        <ul>
+            ${alertDays.map(d => `<li>${d}</li>`).join('')}
+        </ul>
+    `;
+} else {
+    summary.innerHTML = `
+        ✅ Visomis dienomis dirba bent 3 žmonės.
+    `;
+}
+</script>
+
+</body>
+</html>
